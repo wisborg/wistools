@@ -2,11 +2,17 @@
 Wistools is a collection of Python tools to make life easier as a developer.
 
 ```python
-import wistools
-
-table = wistools.Table(['Key', 'Value'], ['s', 'd'])
-table.add_row(['Foo', 1], ['Bar', 2])
-print(table.generate(framing=True))
+>>> from wistools.table import Table
+>>> table = Table(['Key', 'Value'], ['s', 'd'])
+>>> table.add_row(['Foo', 1])
+>>> table.add_row(['Bar', 2])
+>>> print(table.generate(frame=True))
++-----+-------+
+| Key | Value |
++-----+-------+
+| Foo |     1 |
+| Bar |     2 |
++-----+-------+
 ```
 
 Generates:
@@ -25,7 +31,7 @@ Generates:
 Wistools is installed from GitHub:
 
 ```shell
-$ python -m pip install https://github.com/wisborg/wistools
+$ python -m pip install git+https://github.com/wisborg/wistools
 ```
 
 Wistools have been tested with Python 3.9.
