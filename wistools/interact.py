@@ -4,12 +4,59 @@ RE_VALIDATE_ID = re.compile(r'^[1-9]\d*$')
 RE_VALIDATE_FLOAT = re.compile(r'^(?:\d+|(?:\d+)?\.(?:\d+)?)$')
 
 
+def _ask_normal(question: str, answer_type: str, default, allow_none: bool):
+    keep_asking = True
+    answer = None
+    while keep_asking:
+        answer = input(question)
+        if answer == '':
+            answer = str(default) if default is not None else None
+
+        valid, answer = validate(answer, answer_type, allow_none)
+        if valid:
+            keep_asking = False
+        else:
+            print(f'Invalid answer. Expected type: {answer_type}')
+
+    return answer
+
+
+def _ask_multiline(question: str, default, allow_none: bool):
+    keep_asking = True
+    answer = None
+    paragraphs = []
+    print(question)
+    while keep_asking:
+        try:
+            paragraph = input().strip()
+        except EOFError:
+            paragraph = ''
+
+        if paragraph:
+            paragraphs.append(paragraph)
+            print('\n')
+        else:
+            answer = '\n\n'.join(paragraphs)
+
+            if answer == '':
+                answer = str(default) if default is not None else None
+
+            valid, answer = validate(answer, 'string', allow_none)
+            if valid:
+                keep_asking = False
+            else:
+                print('Invalid answer. Expected type: string')
+                paragraphs = []
+
+    return answer
+
+
 def ask(prompt: str, answer_type: str, default=None, allow_none: bool = True,
         multiline: bool = False):
     if default is not None:
-        question = '{0} [{1}]'.format(prompt, str(default))
+        question = f'{prompt} [{default}]'
     else:
-        question = '{0}'.format(prompt)
+        question = prompt
 
     if answer_type == 'bool':
         question += ' (Y/N/YES/NO): '
@@ -18,30 +65,10 @@ def ask(prompt: str, answer_type: str, default=None, allow_none: bool = True,
     else:
         question += ': '
 
-    keep_asking = True
-    answer = None
-    paragraphs = []
-    while keep_asking:
-        if multiline:
-            try:
-                answer = input().strip()
-            except EOFError:
-                answer = ''
-            if answer:
-                paragraphs.append(answer)
-                print('\n')
-            else:
-                answer = '\n\n'.join(paragraphs)
-        else:
-            answer = input(question)
-        if answer == '':
-            answer = str(default) if default is not None else None
-
-        valid, answer = validate(answer, answer_type, allow_none)
-        if valid:
-            keep_asking = False
-        else:
-            print('Invalid answer. Expected type: {0}'.format(answer_type))
+    if multiline:
+        answer = _ask_multiline(question, default, allow_none)
+    else:
+        answer = _ask_normal(question, answer_type, default, allow_none)
 
     return answer
 
