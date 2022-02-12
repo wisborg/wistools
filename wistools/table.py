@@ -17,11 +17,13 @@ class Table(object):
     _formats: list = []
     _rows: list = []
     _column_widths: list = []
+    _column_widths_ml: list = []
 
     def __init__(self, headers: list, formats: list or None = None):
         self._headers = headers
         self._rows = []
         self._column_widths = []
+        self._column_widths_ml = []
         self._ini_column_widths()
 
         if formats is None:
@@ -52,7 +54,8 @@ class Table(object):
         self._ini_column_widths()
         self.add_rows(rows)
 
-    def formats(self, frame: bool = False, spacing: int = 3) -> FORMATS:
+    def formats(self, frame: bool = False, spacing: int = 3,
+                multiline: bool = False) -> FORMATS:
         """Returns the format definitions for the table as a FORMATS
         named tuple. This is useful for implementing custom generators.
         """
@@ -60,7 +63,11 @@ class Table(object):
         fmt_header = ''
         fmt_row = ''
         i = 0
-        for width in self._column_widths:
+        if multiline:
+            column_widths = self._column_widths_ml
+        else:
+            column_widths = self._column_widths
+        for width in column_widths:
             if frame:
                 bar += '+-' + ('-' * width)
                 fmt_header += '| '
@@ -122,10 +129,12 @@ class Table(object):
         self._rows.append(formatted_row)
         self._update_column_widths(formatted_row)
 
-    def generate_header(self, frame: bool = False, spacing: int = 3) -> str:
+    def generate_header(self, frame: bool = False, spacing: int = 3,
+                        multiline: bool = False) -> str:
         """Generate the header for the table. Mostly useful if you
         implement your custom generator."""
-        formats = self.formats(frame=frame, spacing=spacing)
+        formats = self.formats(frame=frame, spacing=spacing,
+                               multiline=multiline)
         if frame:
             output = formats.bar
         else:
@@ -135,10 +144,59 @@ class Table(object):
         output += formats.bar
         return output.rstrip('\n')
 
-    def generate(self, frame: bool = False, spacing: int = 3) -> str:
+    def _ml_row(self, row: list, frame: bool, spacing: int):
+        # Split the column values by newline (for strings)
+        output = ''
+        columns = []
+        max_lines = 0
+        i = 0
+        for column in row:
+            fmt_col = self._fmt_col(i)
+            if fmt_col[-1] == 's':
+                lines = column.split('\n')
+            else:
+                lines = [column]
+            max_lines = max(max_lines, len(lines))
+            columns.append(lines)
+            i += 1
+
+        for i in range(max_lines):
+            str_row = ''
+            j = 0
+            for column in columns:
+                try:
+                    value = column[i]
+                except IndexError:
+                    str_value = ' ' * self._column_widths_ml[j]
+                else:
+                    fmt_col = self._fmt_col(j, self._column_widths_ml[j])
+                    fmt = f'{{0:{fmt_col}}}'
+                    str_value = fmt.format(value)
+
+                if frame:
+                    str_row += f'| {str_value} '
+                else:
+                    if j > 0:
+                        str_row += ' ' * spacing
+                    str_row += str_value
+                j += 1
+
+            if frame:
+                str_row += '|'
+
+            output += str_row.rstrip() + '\n'
+
+        return output
+
+    def generate(self, frame: bool = False, spacing: int = 3,
+                 multiline: bool = False) -> str:
         """Generate the table and return it as a string.
         The frame argument specifies whether framing should be added to
         the table (MySQL style output) - default is not to add framing.
+
+        The multiline argument specifies whether to detect multiline strings
+        and add one row per line. Default is not to handle multiline values
+        specially.
         """
 
         if len(self._rows) == 0:
@@ -146,11 +204,16 @@ class Table(object):
             # Just return an empty string
             return ''
 
-        formats = self.formats(frame=frame, spacing=spacing)
-        output = self.generate_header(frame=frame, spacing=spacing)
+        formats = self.formats(frame=frame, spacing=spacing,
+                               multiline=multiline)
+        output = self.generate_header(frame=frame, spacing=spacing,
+                                      multiline=multiline)
         output += '\n'
         for row in self._rows:
-            output += formats.row.format(*row)
+            if multiline:
+                output += self._ml_row(row, frame, spacing)
+            else:
+                output += formats.row.format(*row).rstrip() + '\n'
         if frame:
             output += formats.bar
 
@@ -162,17 +225,29 @@ class Table(object):
         """
         i = 0
         for column in row:
-            current_width = self._column_widths[i]
             fmt_col = self._fmt_col(i)
             fmt = f'{{0:{fmt_col}}}'
+
+            current_width = self._column_widths[i]
             value_str = fmt.format(column)
             self._column_widths[i] = max(current_width, len(value_str))
+
+            # Handle multiline strings
+            if fmt_col[-1] == 's':
+                for line in column.split('\n'):
+                    current_width = self._column_widths_ml[i]
+                    value_str = fmt.format(line)
+                    self._column_widths_ml[i] = max(current_width,
+                                                    len(value_str))
+            else:
+                self._column_widths_ml[i] = self._column_widths[i]
             i += 1
 
     def _ini_column_widths(self):
         """Initialise the maximum column widths with the width of the
         headers."""
         self._column_widths = [len(h) for h in self._headers]
+        self._column_widths_ml = [len(h) for h in self._headers]
 
     def _fmt_col(self, column_index: int, width: int or None = None) -> str:
         """Generate the format for a column. The total width of the
