@@ -28,13 +28,13 @@ def _ask_multiline(question: str, default, allow_none: bool):
     print(question)
     while keep_asking:
         try:
-            paragraph = input().strip()
+            paragraph = input().rstrip()
         except EOFError:
             paragraph = ''
 
         if paragraph:
             paragraphs.append(paragraph)
-            print('\n')
+            print('')
         else:
             answer = '\n\n'.join(paragraphs)
 
