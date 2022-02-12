@@ -34,7 +34,6 @@ def _ask_multiline(question: str, default, allow_none: bool):
 
         if paragraph:
             paragraphs.append(paragraph)
-            print('\n')
         else:
             answer = '\n\n'.join(paragraphs)
 
