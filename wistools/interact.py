@@ -1,10 +1,18 @@
+from platform import system
 import re
+
+# On macOS the maximum size of the buffer is limited to 1KiB. A workaround
+# is to import readline. The readline module is not explicitly used anywhere.
+# https://stackoverflow.com/questions/7357007/python-raw-input-limit-with-mac-os-x-terminal
+if system() == 'Darwin':
+    import readline
 
 RE_VALIDATE_ID = re.compile(r'^[1-9]\d*$')
 RE_VALIDATE_FLOAT = re.compile(r'^(?:\d+|(?:\d+)?\.(?:\d+)?)$')
 
 
 def _ask_normal(question: str, answer_type: str, default, allow_none: bool):
+    """Internal routine for asking for a single line answer."""
     keep_asking = True
     answer = None
     while keep_asking:
@@ -22,21 +30,27 @@ def _ask_normal(question: str, answer_type: str, default, allow_none: bool):
 
 
 def _ask_multiline(question: str, default, allow_none: bool):
+    """Internal routine to ask for a multiline answer."""
+    re_colon = re.compile(r'^(.+):\s*$')
+    m = re_colon.match(question)
+    if system() == 'Windows':
+        eof = 'CTRL+Z + Enter'
+    else:
+        eof = 'CTRL-D'
+    eof_instructions = f'(empty line or EOF - {eof} - to stop)'
+    if m is None:
+        print(f'{question} {eof_instructions}:')
+    else:
+        print(f'{m[1]} {eof_instructions}:')
+
     keep_asking = True
     answer = None
-    paragraphs = []
-    print(question)
+    lines = []
     while keep_asking:
         try:
-            paragraph = input().rstrip()
+            line = input()
         except EOFError:
-            paragraph = ''
-
-        if paragraph:
-            paragraphs.append(paragraph)
-            print('')
-        else:
-            answer = '\n\n'.join(paragraphs)
+            answer = '\n'.join(lines)
 
             if answer == '':
                 answer = str(default) if default is not None else None
@@ -46,13 +60,21 @@ def _ask_multiline(question: str, default, allow_none: bool):
                 keep_asking = False
             else:
                 print('Invalid answer. Expected type: string')
-                paragraphs = []
+                lines = []
+        else:
+            lines.append(line)
+            print('')
 
     return answer
 
 
 def ask(prompt: str, answer_type: str, default=None, allow_none: bool = True,
         multiline: bool = False):
+    """Interactively ask the user for an answer to a question. Supported
+    answer types are the same as those supported by validate(). If
+    allow_none is True, then an empty answer is allowed and returned as
+    None. If multiline is True, the answer can consist of multiple
+    lines."""
     if default is not None:
         question = f'{prompt} [{default}]'
     else:
@@ -60,8 +82,6 @@ def ask(prompt: str, answer_type: str, default=None, allow_none: bool = True,
 
     if answer_type == 'bool':
         question += ' (Y/N/YES/NO): '
-    elif multiline:
-        question += ' (empty line or EOF to stop)'
     else:
         question += ': '
 
@@ -74,6 +94,8 @@ def ask(prompt: str, answer_type: str, default=None, allow_none: bool = True,
 
 
 def validate(value, valid_type, allow_none=True):
+    """Validate a value based on the expected type. Supported types are:
+    id (positive integer), float, bool, and string."""
     valid = False
     validated_value = None
     if value is None:
