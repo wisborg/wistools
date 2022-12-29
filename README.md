@@ -40,5 +40,6 @@ Wistools have been tested with Python 3.9.
 
 Wistools supports the following features:
 
+* **interact:** Tools for interacting with the user.
 * **Table:** A table generator.
-
+* **text:** Various utilities for manipulating text strings.
