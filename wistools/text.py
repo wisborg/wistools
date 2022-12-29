@@ -19,9 +19,9 @@ def banner(lines: list[str], spacing: int = 5, max_width: int = 0) -> str:
     for line in print_lines:
         long_line = max(long_line, len(line))
 
-    full = '*' * (long_line + spacing + 2) + '\n'
-    sparse = '*' + ' ' * (long_line + spacing) + '*\n'
-    fmt = f'*{{:^{long_line + spacing}s}}*\n'
+    full = '*' * (long_line + 2 * spacing + 2) + '\n'
+    sparse = '*' + ' ' * (long_line + 2* spacing) + '*\n'
+    fmt = f'*{{:^{long_line + 2 * spacing}s}}*\n'
     output = full + sparse
     for line in print_lines:
         output += fmt.format(line)
