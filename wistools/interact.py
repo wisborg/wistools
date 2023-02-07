@@ -16,6 +16,7 @@ def _ask_normal(question: str, answer_type: str, default, allow_none: bool):
     """Internal routine for asking for a single line answer."""
     keep_asking = True
     answer = None
+    print(f'In _ask_normal')
     while keep_asking:
         answer = input(question)
         if answer == '':
