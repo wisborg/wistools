@@ -18,7 +18,7 @@ def _ask_normal(question: str, answer_type: str, default, allow_none: bool):
     answer = None
     print(f'In _ask_normal')
     while keep_asking:
-        answer = input(question)
+        answer = input(question + ' bar: ')
         if answer == '':
             answer = str(default) if default is not None else None
 
@@ -79,6 +79,7 @@ def ask(prompt: str, answer_type: str, default=None, allow_none: bool = True,
     allow_none is True, then an empty answer is allowed and returned as
     None. If multiline is True, the answer can consist of multiple
     lines."""
+    print('Jesper - ask 1')
     if default is not None:
         question = f'{prompt} [{default}]'
     else:
@@ -87,11 +88,13 @@ def ask(prompt: str, answer_type: str, default=None, allow_none: bool = True,
     if answer_type == 'bool':
         question += ' (Y/N/YES/NO): '
     else:
-        question += ': '
+        question += ' - foo: '
 
     if multiline:
+        print('Jesper - ask 2 (multiline)')
         answer = _ask_multiline(question, default, allow_none)
     else:
+        print('Jesper - ask 2 (normal)')
         answer = _ask_normal(question, answer_type, default, allow_none)
 
     return answer
@@ -100,7 +103,6 @@ def ask(prompt: str, answer_type: str, default=None, allow_none: bool = True,
 def validate(value, valid_type, allow_none=True):
     """Validate a value based on the expected type. Supported types are:
     id (positive integer), float, bool, and string."""
-    return True, int(value)
     valid = False
     validated_value = None
     if value is None:
