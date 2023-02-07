@@ -107,6 +107,7 @@ def validate(value, valid_type, allow_none=True):
                 valid = True
                 validated_value = int(value)
         elif valid_type == 'integer':
+            print(f'value ..........: "{value}"')
             if RE_VALIDATE_INT.match(value):
                 valid = True
                 validated_value = int(value)
