@@ -21,6 +21,8 @@ def _ask_normal(question: str, answer_type: str, default, allow_none: bool):
         if answer == '':
             answer = str(default) if default is not None else None
 
+        print(f'answer ........: "{answer}"')
+        print(f'answer type ...: "{answer_type}"')
         valid, answer = validate(answer, answer_type, allow_none)
         if valid:
             keep_asking = False
