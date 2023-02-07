@@ -3,7 +3,20 @@ from contextlib import contextmanager
 from gzip import GzipFile
 from mimetypes import guess_type
 from pathlib import Path
+import re
 from zipfile import ZipFile
+
+from unidecode import unidecode
+
+# Regexps for characters not allowed in filename or that should be removed for
+# sanity purposes. RE_FILENAME_SPECIAL_2 is substituted with " - ".
+# RE_FILENAME_SPECIAL_3 is substituted with "-"
+# It is assumed there are no non-printable characters or control characters
+# in the information used to generate file names.
+RE_FILENAME_SPECIAL_1 = re.compile(r'[<>"\\|?*!]')
+RE_FILENAME_SPECIAL_2 = re.compile(r'[:]')
+RE_FILENAME_SPECIAL_3 = re.compile(r'[/]')
+RE_FILENAME_WS = re.compile(r'\s\s+')
 
 
 # Source: https://peps.python.org/pep-0343/
@@ -67,3 +80,20 @@ def open_file(filepath: (str or Path), mode: str = 'rb',
         fs = file.open(mode=mode, encoding=encoding)
 
     return fs
+
+
+def sanitize_filename(filename: str) -> str:
+    """Takes a filename (without path) and replaces accented
+    characters with their unaccented equivalent and attempts to
+    remove characters not supported on common file systems."""
+    # Replace all accented characters with their unaccented equivalent
+    no_accents = unidecode(filename)
+
+    # Also try to remove characters that are known to be forbidden on Windows
+    # or Linux.
+    no_special1 = RE_FILENAME_SPECIAL_1.sub('', no_accents)
+    no_special2 = RE_FILENAME_SPECIAL_2.sub(' - ', no_special1)
+    no_special3 = RE_FILENAME_SPECIAL_3.sub('-', no_special2)
+
+    # Change consecutive whitespace characters to single space
+    return RE_FILENAME_WS.sub(' ', no_special3)
