@@ -100,6 +100,7 @@ def ask(prompt: str, answer_type: str, default=None, allow_none: bool = True,
 def validate(value, valid_type, allow_none=True):
     """Validate a value based on the expected type. Supported types are:
     id (positive integer), float, bool, and string."""
+    return True, int(value)
     valid = False
     validated_value = None
     if value is None:
