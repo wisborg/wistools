@@ -9,6 +9,7 @@ if system() == 'Darwin':
 
 RE_VALIDATE_ID = re.compile(r'^[1-9]\d*$')
 RE_VALIDATE_FLOAT = re.compile(r'^(?:\d+|(?:\d+)?\.(?:\d+)?)$')
+RE_VALIDATE_INT = re.compile(r'^-?\d+$')
 
 
 def _ask_normal(question: str, answer_type: str, default, allow_none: bool):
@@ -103,6 +104,10 @@ def validate(value, valid_type, allow_none=True):
     else:
         if valid_type == 'id':
             if RE_VALIDATE_ID.match(value):
+                valid = True
+                validated_value = int(value)
+        elif valid_type == 'integer':
+            if RE_VALIDATE_INT.match(value):
                 valid = True
                 validated_value = int(value)
         elif valid_type == 'bool':
