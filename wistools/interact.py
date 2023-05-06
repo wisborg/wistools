@@ -1,11 +1,15 @@
 from platform import system
+import subprocess
 import re
+from sys import platform
 
 # On macOS the maximum size of the buffer is limited to 1KiB. A workaround
 # is to import readline. The readline module is not explicitly used anywhere.
 # https://stackoverflow.com/questions/7357007/python-raw-input-limit-with-mac-os-x-terminal
-if system() == 'Darwin':
+if platform == 'darwin':
     import readline
+
+from process import realtime
 
 RE_VALIDATE_ID = re.compile(r'^[1-9]\d*$')
 RE_VALIDATE_FLOAT = re.compile(r'^(?:\d+|(?:\d+)?\.(?:\d+)?)$')
@@ -123,3 +127,10 @@ def validate(value, valid_type, allow_none=True):
             validated_value = str(value)
 
     return valid, validated_value
+
+
+def announce(message: str, threshold: int = 0):
+    """Announce a message optionally only when the process has run for
+    longer than a given number of seconds."""
+    if realtime() > threshold and platform == 'darwin':
+        subprocess.run(['say', message], capture_output=False)

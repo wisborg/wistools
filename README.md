@@ -41,5 +41,7 @@ Wistools have been tested with Python 3.9.
 Wistools supports the following features:
 
 * **interact:** Tools for interacting with the user.
-* **Table:** A table generator.
+* **io:** Utilities for working with io.
+* **process:** Tools for working with processes. This relies on psutil.
+* **table:** A table generator.
 * **text:** Various utilities for manipulating text strings.
