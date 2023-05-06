@@ -9,7 +9,7 @@ from sys import platform
 if platform == 'darwin':
     import readline
 
-from process import realtime
+from .process import realtime
 
 RE_VALIDATE_ID = re.compile(r'^[1-9]\d*$')
 RE_VALIDATE_FLOAT = re.compile(r'^(?:\d+|(?:\d+)?\.(?:\d+)?)$')
