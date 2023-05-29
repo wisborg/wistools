@@ -97,3 +97,18 @@ def sanitize_filename(filename: str) -> str:
 
     # Change consecutive whitespace characters to single space
     return RE_FILENAME_WS.sub(' ', no_special3)
+
+
+def get_files(locations: list[Path] or list[str], glob: str) -> list[Path]:
+    files = []
+    for location in locations:
+        path = Path(location.rstrip('\\'))
+        if path.is_dir():
+            candidates = path.glob(glob)
+            for candidate in candidates:
+                if candidate.is_file():
+                    files.append(candidate)
+        elif path.is_file():
+            files.append(path)
+
+    return files
