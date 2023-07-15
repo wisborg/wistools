@@ -96,7 +96,8 @@ class CsvDict(object):
                   properties: (list or tuple) = (),
                   header_rows: int = 1, validate_headers: bool = False,
                   encoding: str = 'utf-8-sig', delimiter: str = ',',
-                  quotechar: str = '"', require_column: str = ''):
+                  quotechar: str = '"', require_column: str = '',
+                  filters: dict = None):
         """Load the content of a CSV file. The path is mandatory.
 
         The key argument specifies the column header (as a string) that
@@ -176,5 +177,13 @@ class CsvDict(object):
                         continue
 
                     row_value = self._row_tuple(*row.values())
-                    key_value = getattr(row_value, self.key)
-                    self._rows[key_value] = row_value
+                    include = True
+                    if filters is not None:
+                        for key, filter_value in filters.items():
+                            value = getattr(row_value, key)
+                            if value != filter_value:
+                                include = False
+
+                    if include:
+                        key_value = getattr(row_value, self.key)
+                        self._rows[key_value] = row_value
