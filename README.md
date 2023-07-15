@@ -41,6 +41,7 @@ Wistools have been tested with Python 3.9.
 Wistools supports the following features:
 
 * **basic:** Basic tools.
+* **csv:** Working with CSV files.
 * **interact:** Tools for interacting with the user.
 * **io:** Utilities for working with io.
 * **process:** Tools for working with processes. This relies on psutil.

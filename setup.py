@@ -5,7 +5,7 @@ with open("README.md", "r", encoding="utf-8") as fh:
 
 setup(
     name='wistools',
-    version='0.0.22',
+    version='0.0.23',
     author='Jesper Wisborg Krogh',
     author_email='wistools@wisborg.dk',
     description='A collections of Python tools',
