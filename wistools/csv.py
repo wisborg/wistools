@@ -10,6 +10,9 @@ import re
 
 def _validate_headers(header_row: dict, expected: list):
     actual = [h for h in list(header_row.values())]
+    if len(expected) != len(actual):
+        raise ValueError(f'The number of headers ({len(actual)} differs ' +
+                         f'from the expected ({len(expected)}).')
     for i in range(len(expected)):
         striped = actual[i].strip(' "')
         # For some reason strip() doesn't remove a leading "

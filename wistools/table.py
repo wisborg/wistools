@@ -18,6 +18,7 @@ class Table(object):
     _rows: list = []
     _column_widths: list = []
     _column_widths_ml: list = []
+    _separators: list = []
 
     def __init__(self, headers: list, formats: list or None = None):
         self._headers = headers
@@ -129,6 +130,10 @@ class Table(object):
         self._rows.append(formatted_row)
         self._update_column_widths(formatted_row)
 
+    def add_separator(self):
+        """Add a separator after the current row."""
+        self._separators.append(len(self._rows))
+
     def generate_header(self, frame: bool = False, spacing: int = 3,
                         multiline: bool = False) -> str:
         """Generate the header for the table. Mostly useful if you
@@ -143,6 +148,13 @@ class Table(object):
         output += formats.header.format(*self._headers)
         output += formats.bar
         return output.rstrip('\n')
+
+    def generate_separator(self, frame: bool = False, spacing: int = 3,
+                           multiline: bool = False) -> str:
+        """Generate a row separator."""
+        formats = self.formats(frame=frame, spacing=spacing,
+                               multiline=multiline)
+        return formats.bar.rstrip('\n')
 
     def _ml_row(self, row: list, frame: bool, spacing: int):
         # Split the column values by newline (for strings)
@@ -209,11 +221,18 @@ class Table(object):
         output = self.generate_header(frame=frame, spacing=spacing,
                                       multiline=multiline)
         output += '\n'
+        i = 0
         for row in self._rows:
+            i += 1
             if multiline:
                 output += self._ml_row(row, frame, spacing)
             else:
                 output += formats.row.format(*row).rstrip() + '\n'
+
+            if i in self._separators:
+                output += self.generate_separator(frame=frame, spacing=spacing,
+                                                  multiline=multiline) + '\n'
+
         if frame:
             output += formats.bar
 
